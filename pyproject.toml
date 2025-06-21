@@ -3,15 +3,21 @@ name = "find-lines"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-authors = [
-    { name = "David Fokkema", email = "davidfokkema@icloud.com" }
-]
+authors = [{ name = "David Fokkema", email = "davidfokkema@icloud.com" }]
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "textual>=3.5.0",
+]
 
 [project.scripts]
-find-lines = "find_lines:main"
+find-lines = "find_lines.app:main"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.12.0",
+    "textual-dev>=1.7.0",
+]
