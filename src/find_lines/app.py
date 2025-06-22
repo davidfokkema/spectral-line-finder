@@ -2,16 +2,19 @@ from pathlib import Path
 from typing import Annotated, Any
 
 import typer
+from textual import work
 from textual.app import App, ComposeResult
 from textual.widgets import DataTable, Footer, Header
 
 from find_lines import data
+from find_lines.select_columns import SelectColumnsDialog
 
 app = typer.Typer()
 
 
 class FindLinesApp(App[None]):
-    _selected_columns = all_columns = [
+    BINDINGS = [("c", "select_columns", "Select Columns")]
+    _selected_columns = [
         "element",
         "sp_num",
         "obs_wl(nm)",
@@ -39,10 +42,21 @@ class FindLinesApp(App[None]):
 
     def fill_table(self):
         table = self.query_one(DataTable)
+        table.clear(columns=True)
         table.cursor_type = "row"
         table.add_columns(*self._selected_columns)
         table.add_rows(self.spectrum.get_display_rows(self._selected_columns))
         self.notify(f"Showing {table.row_count} spectral lines.")
+
+    def action_select_columns(self) -> None:
+        self.select_columns()
+
+    @work
+    async def select_columns(self) -> None:
+        self._selected_columns = await self.push_screen_wait(
+            SelectColumnsDialog(self._selected_columns)
+        )
+        self.fill_table()
 
 
 @app.command()
