@@ -1,7 +1,6 @@
 from pathlib import Path
-from typing import Annotated, Any, Generator
+from typing import Annotated, Any
 
-import pandas as pd
 import typer
 from textual.app import App, ComposeResult
 from textual.widgets import DataTable, Footer, Header
@@ -27,6 +26,7 @@ class FindLinesApp(App[None]):
     def __init__(self, path: Path, *args: Any, **kwargs: dict[str, Any]) -> None:
         super().__init__(*args, **kwargs)
         self.db_path = path
+        self.spectrum = data.NistSpectralLines()
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -34,15 +34,15 @@ class FindLinesApp(App[None]):
         yield DataTable()
 
     def on_mount(self):
-        self._data = data.read_data_file(self.db_path)
+        self.spectrum.read_data_file(self.db_path)
         self.fill_table()
 
     def fill_table(self):
         table = self.query_one(DataTable)
         table.cursor_type = "row"
         table.add_columns(*self._selected_columns)
-        table.add_rows(data.get_display_rows(self._data, self._selected_columns))
-        self.notify(f"Added {len(self._data)} rows.")
+        table.add_rows(self.spectrum.get_display_rows(self._selected_columns))
+        self.notify(f"Showing {table.row_count} spectral lines.")
 
 
 @app.command()
