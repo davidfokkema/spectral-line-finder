@@ -22,6 +22,7 @@ class FindLinesApp(App[None]):
     def on_mount(self):
         df = self.read_data_file()
         table = self.query_one(DataTable)
+        table.cursor_type = "row"
         columns = [
             "element",
             "sp_num",
