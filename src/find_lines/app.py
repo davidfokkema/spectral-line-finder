@@ -45,7 +45,10 @@ class FindLinesApp(App[None]):
             "line_ref",
         ]
         table.add_columns(*columns)
-        table.add_rows((r for _, r in df[columns].iterrows()))
+        table.add_rows(
+            (("" if pd.isna(x) else x for x in r) for _, r in df[columns].iterrows())
+        )
+        self.notify(f"Added {len(df)} rows.")
 
     def read_data_file(self):
         rows_to_skip = [
