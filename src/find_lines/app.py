@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Generator
 
 import pandas as pd
 import typer
@@ -12,28 +12,17 @@ app = typer.Typer()
 
 
 class FindLinesApp(App[None]):
-    _selected_columns = {
-        "element": True,
-        "sp_num": True,
-        "obs_wl(nm)": True,
-        "unc_obs_wl": False,
-        "ritz_wl_vac(nm)": True,
-        "unc_ritz_wl": False,
-        "intens": True,
-        "Aki(s^-1)": False,
-        "Acc": False,
-        "Ei(eV)": True,
-        "Ek(eV)": True,
-        "conf_i": True,
-        "term_i": False,
-        "J_i": False,
-        "conf_k": True,
-        "term_k": False,
-        "J_k": False,
-        "Type": False,
-        "tp_ref": False,
-        "line_ref": False,
-    }
+    _selected_columns = all_columns = [
+        "element",
+        "sp_num",
+        "obs_wl(nm)",
+        "ritz_wl_vac(nm)",
+        "intens",
+        "Ei(eV)",
+        "Ek(eV)",
+        "conf_i",
+        "conf_k",
+    ]
 
     def __init__(self, path: Path, *args: Any, **kwargs: dict[str, Any]) -> None:
         super().__init__(*args, **kwargs)
@@ -51,14 +40,8 @@ class FindLinesApp(App[None]):
     def fill_table(self):
         table = self.query_one(DataTable)
         table.cursor_type = "row"
-        columns = [k for k, v in self._selected_columns.items() if v is True]
-        table.add_columns(*columns)
-        table.add_rows(
-            (
-                ("" if pd.isna(x) else x for x in r)
-                for _, r in self._data[columns].iterrows()
-            )
-        )
+        table.add_columns(*self._selected_columns)
+        table.add_rows(data.get_display_rows(self._data, self._selected_columns))
         self.notify(f"Added {len(self._data)} rows.")
 
 

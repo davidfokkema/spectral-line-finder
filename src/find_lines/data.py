@@ -1,4 +1,5 @@
 import pathlib
+from typing import Generator
 
 import pandas as pd
 
@@ -26,7 +27,7 @@ all_columns = [
 ]
 
 
-def read_data_file(path: pathlib.Path):
+def read_data_file(path: pathlib.Path) -> pd.DataFrame:
     rows_to_skip = [
         idx
         for idx, row in enumerate(path.read_text().splitlines())
@@ -49,3 +50,10 @@ def read_data_file(path: pathlib.Path):
             }
         )
     )
+
+
+def get_display_rows(
+    df: pd.DataFrame, columns: list[str]
+) -> Generator[tuple[str, ...], None, None]:
+    for _, row in df[columns].iterrows():
+        yield tuple("" if pd.isna(x) else str(x) for x in row)
