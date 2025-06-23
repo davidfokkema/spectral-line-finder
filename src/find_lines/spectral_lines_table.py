@@ -41,7 +41,9 @@ class SpectralLinesTable(DataTable):
 
     @work
     async def select_columns(self) -> None:
-        self._selected_columns = await self.app.push_screen_wait(
+        selection = await self.app.push_screen_wait(
             SelectColumnsDialog(self._selected_columns)
         )
-        self.fill_table()
+        if selection is not None:
+            self._selected_columns = selection
+            self.fill_table()

@@ -40,4 +40,4 @@ class SelectColumnsDialog(ModalScreen):
         )
 
     def action_discard_choices(self) -> None:
-        self.dismiss(self.initial_selected)
+        self.dismiss(None)
