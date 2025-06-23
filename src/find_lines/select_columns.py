@@ -1,4 +1,5 @@
 from textual.app import ComposeResult
+from textual.containers import Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Footer, SelectionList
 
@@ -20,13 +21,14 @@ class SelectColumnsDialog(ModalScreen):
 
     def compose(self) -> ComposeResult:
         yield Footer()
-        yield SelectionList[str](
-            *(
-                (col, col, col in self.initial_selected)
-                for col in NistSpectralLines.all_columns
+        with Vertical():
+            yield SelectionList[str](
+                *(
+                    (col, col, col in self.initial_selected)
+                    for col in NistSpectralLines.all_columns
+                )
             )
-        )
-        yield Button("Confirm Choices")
+            yield Button("Confirm Choices", variant="primary")
 
     def on_button_pressed(self) -> None:
         self.dismiss(
