@@ -1,5 +1,6 @@
 from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, VerticalScroll
+from textual.css.query import NoMatches
 from textual.screen import ModalScreen
 from textual.validation import Integer, Number
 from textual.widgets import Button, Checkbox, Footer, Input, Label
@@ -23,12 +24,12 @@ class FilterDataDialog(ModalScreen):
     def compose(self) -> ComposeResult:
         yield Footer()
         with VerticalScroll():
-            for label, name, Validator in [
-                ("Ionization Stage", "sp_num", Integer),
-                ("Observed Wavelength", "obs_wl", Number),
-                ("Intensity", "intens", Number),
-                ("Initial Energy", "Ei", Number),
-                ("Final Energy", "Ek", Number),
+            for label, name, Validator, show_nan_checkbox in [
+                ("Ionization Stage", "sp_num", Integer, False),
+                ("Observed Wavelength", "obs_wl", Number, True),
+                ("Intensity", "intens", Number, True),
+                ("Initial Energy", "Ei", Number, False),
+                ("Final Energy", "Ek", Number, False),
             ]:
                 with HorizontalGroup():
                     filter = getattr(self.filters, name)
@@ -47,20 +48,26 @@ class FilterDataDialog(ModalScreen):
                         valid_empty=True,
                         id=f"{name}_max",
                     )
-                    yield Checkbox(
-                        label="Show empty", value=filter.show_nan, id=f"{name}_show_nan"
-                    )
+                    if show_nan_checkbox:
+                        yield Checkbox(
+                            label="Show empty",
+                            value=filter.show_nan,
+                            id=f"{name}_show_nan",
+                        )
             yield Button("Confirm Choices", variant="primary")
 
     def on_button_pressed(self) -> None:
         for name in ["sp_num", "obs_wl", "intens", "Ei", "Ek"]:
             filter: MinMaxNanFilter = getattr(self.filters, name)
             min_value = self.query_one(f"#{name}_min", Input).value
-            max_value = self.query_one(f"#{name}_max", Input).value
-            show_nan = self.query_one(f"#{name}_show_nan", Checkbox).value
             filter.min = float(min_value) if min_value else None
+            max_value = self.query_one(f"#{name}_max", Input).value
             filter.max = float(max_value) if max_value else None
-            filter.show_nan = show_nan
+            try:
+                show_nan = self.query_one(f"#{name}_show_nan", Checkbox).value
+                filter.show_nan = show_nan
+            except NoMatches:
+                pass
         self.dismiss(True)
 
     def action_discard_choices(self) -> None:
