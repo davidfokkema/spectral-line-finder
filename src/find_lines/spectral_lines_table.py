@@ -4,11 +4,15 @@ from textual import work
 from textual.widgets import DataTable
 
 from find_lines import data
+from find_lines.filter_data import FilterDataDialog
 from find_lines.select_columns import SelectColumnsDialog
 
 
 class SpectralLinesTable(DataTable):
-    BINDINGS = [("c", "select_columns", "Select Columns")]
+    BINDINGS = [
+        ("c", "select_columns", "Select Columns"),
+        ("f", "filter_data", "Filter data"),
+    ]
 
     _selected_columns = [
         "element",
@@ -21,6 +25,8 @@ class SpectralLinesTable(DataTable):
         "conf_i",
         "conf_k",
     ]
+
+    _filters = data.DataFilters()
 
     def on_mount(self):
         self.spectrum = data.NistSpectralLines()
@@ -47,3 +53,10 @@ class SpectralLinesTable(DataTable):
         if selection is not None:
             self._selected_columns = selection
             self.fill_table()
+
+    def action_filter_data(self) -> None:
+        def callback(is_confirmed: bool | None) -> None:
+            if is_confirmed:
+                self.fill_table()
+
+        self.app.push_screen(FilterDataDialog(self._filters), callback=callback)

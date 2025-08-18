@@ -1,7 +1,36 @@
 import pathlib
+from dataclasses import dataclass
 from typing import Generator
 
 import pandas as pd
+
+
+@dataclass
+class MinMaxNanFilter:
+    min: float | None = None
+    max: float | None = None
+    show_nan: bool = True
+
+
+@dataclass
+class IntegerMinMaxNanFilter:
+    min: int | None = None
+    max: int | None = None
+    show_nan: bool = True
+
+    def __setattr__(self, name, value):
+        if name in ("min", "max") and value is not None:
+            value = int(value)
+        super().__setattr__(name, value)
+
+
+@dataclass
+class DataFilters:
+    sp_num = IntegerMinMaxNanFilter()
+    obs_wl = MinMaxNanFilter()
+    intens = MinMaxNanFilter()
+    Ei = MinMaxNanFilter()
+    Ek = MinMaxNanFilter()
 
 
 class NistSpectralLines:
