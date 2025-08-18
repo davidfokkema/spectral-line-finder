@@ -49,7 +49,7 @@ class FilterDataDialog(ModalScreen):
                         id=f"{name}_max",
                     )
                     filter = getattr(self.filters, name)
-                    if "show_nan" in vars(filter):
+                    if hasattr(filter, "show_nan"):
                         yield Checkbox(
                             label="Show empty",
                             value=filter.show_nan,
