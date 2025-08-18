@@ -24,12 +24,12 @@ class FilterDataDialog(ModalScreen):
     def compose(self) -> ComposeResult:
         yield Footer()
         with VerticalScroll():
-            for label, name, Validator, show_nan_checkbox in [
-                ("Ionization Stage", "sp_num", Integer, False),
-                ("Observed Wavelength", "obs_wl", Number, True),
-                ("Intensity", "intens", Number, True),
-                ("Initial Energy", "Ei", Number, False),
-                ("Final Energy", "Ek", Number, False),
+            for label, name, Validator in [
+                ("Ionization Stage", "sp_num", Integer),
+                ("Observed Wavelength", "obs_wl", Number),
+                ("Intensity", "intens", Number),
+                ("Initial Energy", "Ei", Number),
+                ("Final Energy", "Ek", Number),
             ]:
                 with HorizontalGroup():
                     filter = getattr(self.filters, name)
@@ -48,7 +48,8 @@ class FilterDataDialog(ModalScreen):
                         valid_empty=True,
                         id=f"{name}_max",
                     )
-                    if show_nan_checkbox:
+                    filter = getattr(self.filters, name)
+                    if "show_nan" in vars(filter):
                         yield Checkbox(
                             label="Show empty",
                             value=filter.show_nan,

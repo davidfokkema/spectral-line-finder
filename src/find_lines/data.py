@@ -6,6 +6,12 @@ import pandas as pd
 
 
 @dataclass
+class MinMaxFilter:
+    min: float | None = None
+    max: float | None = None
+
+
+@dataclass
 class MinMaxNanFilter:
     min: float | None = None
     max: float | None = None
@@ -13,10 +19,9 @@ class MinMaxNanFilter:
 
 
 @dataclass
-class IntegerMinMaxNanFilter:
+class IntegerMinMaxFilter:
     min: int | None = None
     max: int | None = None
-    show_nan: bool = True
 
     def __setattr__(self, name, value):
         if name in ("min", "max") and value is not None:
@@ -26,11 +31,11 @@ class IntegerMinMaxNanFilter:
 
 @dataclass
 class DataFilters:
-    sp_num = IntegerMinMaxNanFilter()
+    sp_num = IntegerMinMaxFilter()
     obs_wl = MinMaxNanFilter()
     intens = MinMaxNanFilter()
-    Ei = MinMaxNanFilter()
-    Ek = MinMaxNanFilter()
+    Ei = MinMaxFilter()
+    Ek = MinMaxFilter()
 
 
 class NistSpectralLines:
@@ -82,7 +87,18 @@ class NistSpectralLines:
         )
 
     def get_display_rows(
-        self, columns: list[str]
+        self, columns: list[str], filters: DataFilters
     ) -> Generator[tuple[str, ...], None, None]:
-        for _, row in self._df[columns].iterrows():
+        df = self._df
+        nan_subset = []
+        if not filters.obs_wl.show_nan:
+            nan_subset.append("obs_wl(nm)")
+        if not filters.intens.show_nan:
+            nan_subset.append("intens")
+        filtered_df = (
+            df[columns].dropna(subset=nan_subset)
+            # .loc[(df["B"] >= 10) & (df["B"] <= 20)]
+            # .loc[(df["C"] >= 400) & (df["C"] <= 700)]
+        )
+        for _, row in filtered_df.iterrows():
             yield tuple("" if pd.isna(x) else str(x) for x in row)

@@ -26,7 +26,7 @@ class SpectralLinesTable(DataTable):
         "conf_k",
     ]
 
-    _filters = data.DataFilters()
+    filters = data.DataFilters()
 
     def on_mount(self):
         self.spectrum = data.NistSpectralLines()
@@ -39,7 +39,11 @@ class SpectralLinesTable(DataTable):
         self.clear(columns=True)
         self.cursor_type = "row"
         self.add_columns(*self._selected_columns)
-        self.add_rows(self.spectrum.get_display_rows(self._selected_columns))
+        self.add_rows(
+            self.spectrum.get_display_rows(
+                columns=self._selected_columns, filters=self.filters
+            )
+        )
         self.notify(f"Showing {self.row_count} spectral lines.")
 
     def action_select_columns(self) -> None:
@@ -59,4 +63,4 @@ class SpectralLinesTable(DataTable):
             if is_confirmed:
                 self.fill_table()
 
-        self.app.push_screen(FilterDataDialog(self._filters), callback=callback)
+        self.app.push_screen(FilterDataDialog(self.filters), callback=callback)
