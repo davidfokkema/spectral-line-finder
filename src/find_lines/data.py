@@ -1,5 +1,5 @@
 import pathlib
-from dataclasses import dataclass
+from dataclasses import dataclass, field, fields
 from typing import Generator
 
 import pandas as pd
@@ -7,12 +7,14 @@ import pandas as pd
 
 @dataclass
 class MinMaxFilter:
+    col_name: str
     min: float | None = None
     max: float | None = None
 
 
 @dataclass
 class MinMaxNanFilter:
+    col_name: str
     min: float | None = None
     max: float | None = None
     show_nan: bool = True
@@ -20,6 +22,7 @@ class MinMaxNanFilter:
 
 @dataclass
 class IntegerMinMaxFilter:
+    col_name: str
     min: int | None = None
     max: int | None = None
 
@@ -31,11 +34,17 @@ class IntegerMinMaxFilter:
 
 @dataclass
 class DataFilters:
-    sp_num = IntegerMinMaxFilter()
-    obs_wl = MinMaxNanFilter()
-    intens = MinMaxNanFilter()
-    Ei = MinMaxFilter()
-    Ek = MinMaxFilter()
+    sp_num: IntegerMinMaxFilter = field(
+        default_factory=lambda: IntegerMinMaxFilter(col_name="sp_num")
+    )
+    obs_wl: MinMaxNanFilter = field(
+        default_factory=lambda: MinMaxNanFilter(col_name="obs_wl(nm)")
+    )
+    intens: MinMaxNanFilter = field(
+        default_factory=lambda: MinMaxNanFilter(col_name="intens")
+    )
+    Ei: MinMaxFilter = field(default_factory=lambda: MinMaxFilter(col_name="Ei(eV)"))
+    Ek: MinMaxFilter = field(default_factory=lambda: MinMaxFilter(col_name="Ek(eV)"))
 
 
 class NistSpectralLines:
@@ -90,15 +99,15 @@ class NistSpectralLines:
         self, columns: list[str], filters: DataFilters
     ) -> Generator[tuple[str, ...], None, None]:
         df = self._df
-        nan_subset = []
-        if not filters.obs_wl.show_nan:
-            nan_subset.append("obs_wl(nm)")
-        if not filters.intens.show_nan:
-            nan_subset.append("intens")
-        filtered_df = (
-            df[columns].dropna(subset=nan_subset)
-            # .loc[(df["B"] >= 10) & (df["B"] <= 20)]
-            # .loc[(df["C"] >= 400) & (df["C"] <= 700)]
-        )
+        mask = pd.Series(True, index=df.index)
+        for field_ in fields(filters):
+            filter = getattr(filters, field_.name)
+            if filter.min is not None:
+                mask &= df[filter.col_name] >= filter.min
+            if filter.max is not None:
+                mask &= df[filter.col_name] <= filter.max
+            if hasattr(filter, "show_nan") and not filter.show_nan:
+                mask &= df[filter.col_name].notna()
+        filtered_df = df[mask][columns]
         for _, row in filtered_df.iterrows():
             yield tuple("" if pd.isna(x) else str(x) for x in row)
