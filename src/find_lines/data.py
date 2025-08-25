@@ -1,6 +1,6 @@
 import pathlib
 from dataclasses import dataclass, field, fields
-from typing import Generator
+from typing import Any, Generator
 
 import pandas as pd
 
@@ -26,7 +26,7 @@ class IntegerMinMaxFilter:
     min: int | None = None
     max: int | None = None
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, name: str, value: Any) -> None:
         if name in ("min", "max") and value is not None:
             value = int(value)
         super().__setattr__(name, value)
