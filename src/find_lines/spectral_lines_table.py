@@ -38,7 +38,7 @@ class SpectralLinesTable(DataTable):
     def fill_table(self):
         self.clear(columns=True)
         self.cursor_type = "row"
-        self.add_columns(*self._selected_columns)
+        self.add_columns("Color", *self._selected_columns)
         self.add_rows(
             self.spectrum.get_display_rows(
                 columns=self._selected_columns, filters=self.filters
