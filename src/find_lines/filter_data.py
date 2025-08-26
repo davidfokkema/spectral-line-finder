@@ -1,3 +1,4 @@
+from textual import on
 from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, VerticalScroll
 from textual.css.query import NoMatches
@@ -9,7 +10,10 @@ from find_lines.data import DataFilters, MinMaxNanFilter
 
 
 class FilterDataDialog(ModalScreen):
-    BINDINGS = [("escape", "discard_choices", "Close and Discard Choices")]
+    BINDINGS = [
+        ("escape", "discard_choices", "Close and Discard Choices"),
+        ("ctrl+y", "confirm_choices", "Confirm and Close"),
+    ]
 
     def __init__(
         self,
@@ -55,9 +59,10 @@ class FilterDataDialog(ModalScreen):
                             value=filter.show_nan,
                             id=f"{name}_show_nan",
                         )
-            yield Button("Confirm Choices", variant="primary")
+            yield Button("Confirm and Close", variant="primary")
 
-    def on_button_pressed(self) -> None:
+    @on(Button.Pressed)
+    def action_confirm_choices(self) -> None:
         for name in ["sp_num", "obs_wl", "intens", "Ei", "Ek"]:
             filter: MinMaxNanFilter = getattr(self.filters, name)
             min_value = self.query_one(f"#{name}_min", Input).value
