@@ -144,13 +144,43 @@ def wavelength_to_xyz(wavelength: float) -> tuple[float, float, float]:
     return x, y, z
 
 
-if __name__ == "__main__":
-    wl = 550  # Green light
-    x, y, z = wavelength_to_xyz(wl)
-    print(f"Wavelength: {wl}nm -> X: {x:.4f}, Y: {y:.4f}, Z: {z:.4f}")
+def xyz_to_srgb(x, y, z):
+    """Convert CIE XYZ to sRGB values.
 
-    # Test with multiple wavelengths
-    test_wavelengths = [380, 450, 550, 600, 700]
-    for wl in test_wavelengths:
-        x, y, z = wavelength_to_xyz(wl)
-        print(f"{wl}nm: ({x:.4f}, {y:.4f}, {z:.4f})")
+    Args:
+        x, y, z (float): CIE XYZ values
+
+    Returns:
+        tuple: (R, G, B) values in range [0, 1]
+    """
+    # XYZ to linear RGB transformation matrix (sRGB/Rec.709)
+    r = 3.2406 * x - 1.5372 * y - 0.4986 * z
+    g = -0.9689 * x + 1.8758 * y + 0.0415 * z
+    b = 0.0557 * x - 0.2040 * y + 1.0570 * z
+
+    # sRGB gamma correction
+    def gamma_correct(val):
+        if val > 0.0031308:
+            return 1.055 * (val ** (1 / 2.4)) - 0.055
+        else:
+            return 12.92 * val
+
+    r = gamma_correct(r)
+    g = gamma_correct(g)
+    b = gamma_correct(b)
+
+    return np.clip([r, g, b], 0, 1)
+
+
+def wavelength_to_rgb(wavelength: float) -> tuple[int, int, int]:
+    """Convert wavelength to sRGB values.
+
+    Args:
+        wavelength: Wavelength in nanometers
+
+    Returns:
+        The (R, G, B) values as a tuple in range [0, 255].
+    """
+    x, y, z = wavelength_to_xyz(wavelength)
+    r, g, b = xyz_to_srgb(x, y, z)
+    return int(r * 255), int(g * 255), int(b * 255)
