@@ -1,4 +1,3 @@
-from pathlib import Path
 
 from textual import work
 from textual.widgets import DataTable

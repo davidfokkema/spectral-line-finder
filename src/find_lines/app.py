@@ -1,5 +1,3 @@
-from pathlib import Path
-from typing import Annotated, Any
 
 import typer
 from textual.app import App, ComposeResult
