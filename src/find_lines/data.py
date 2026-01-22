@@ -89,7 +89,7 @@ class NistSpectralLines:
             if row.startswith("element")
         ][1:]
 
-        extract_columns = ["intens", "Ei(eV)", "Ek(eV)"]
+        extract_columns = ["intens", "Ei(eV)", "Ek(eV)", "ritz_wl_vac(nm)"]
 
         df = (
             pd.read_csv(path, delimiter="\t", usecols=range(20), skiprows=rows_to_skip)
