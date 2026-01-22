@@ -1,8 +1,10 @@
 import importlib.resources
+import io
 import pathlib
 from dataclasses import dataclass, field, fields
 from typing import Any, Generator, TypeAlias
 
+import httpx
 import numpy as np
 import pandas as pd
 from rich.text import Text
@@ -44,7 +46,7 @@ class IntegerMinMaxFilter:
 
 @dataclass
 class DataFilters:
-    elements: ElementFilter = field(default_factory=lambda: ElementFilter(["Na"]))
+    elements: ElementFilter = field(default_factory=lambda: ElementFilter([]))
     sp_num: IntegerMinMaxFilter = field(
         default_factory=lambda: IntegerMinMaxFilter(col_name="sp_num")
     )
@@ -82,17 +84,27 @@ class NistSpectralLines:
         "line_ref",
     ]
 
-    def read_data_file(self, path: pathlib.Path) -> pd.DataFrame:
+    def load_data_from_nist(self, element: str) -> pd.DataFrame:
+        url = f"https://physics.nist.gov/cgi-bin/ASD/lines1.pl?spectra={element}&output_type=0&low_w=&upp_w=&unit=1&de=0&plot_out=0&I_scale_type=1&format=3&line_out=0&remove_js=on&en_unit=1&output=0&bibrefs=1&page_size=15&show_obs_wl=1&show_calc_wl=1&unc_out=1&order_out=0&max_low_enrg=&show_av=2&max_upp_enrg=&tsb_value=0&min_str=&A_out=0&intens_out=on&max_str=&allowed_out=1&forbid_out=1&min_accur=&min_intens=&conf_out=on&term_out=on&enrg_out=on&J_out=on&submit=Retrieve+Data"
+
+        data = httpx.get(url).text
+
+        # Find header rows, interspersed in the data
         rows_to_skip = [
             idx
-            for idx, row in enumerate(path.read_text().splitlines())
+            for idx, row in enumerate(data.splitlines())
             if row.startswith("element")
         ][1:]
 
         extract_columns = ["intens", "Ei(eV)", "Ek(eV)", "ritz_wl_vac(nm)"]
 
         df = (
-            pd.read_csv(path, delimiter="\t", usecols=range(20), skiprows=rows_to_skip)
+            pd.read_csv(
+                io.StringIO(data),
+                delimiter="\t",
+                usecols=range(20),
+                skiprows=rows_to_skip,
+            )
             .rename(columns={"obs_wl_vac(nm)": "obs_wl(nm)"})
             .rename(columns={col: col + "_" for col in extract_columns})
             .assign(
@@ -129,8 +141,7 @@ class NistSpectralLines:
     def _get_filtered_dataframe(self, filters: DataFilters) -> pd.DataFrame:
         # Read all elements
         dfs = [
-            self.read_data_file(pathlib.Path(f"lines-{element.lower()}.tsv"))
-            for element in filters.elements.elements
+            self.load_data_from_nist(element) for element in filters.elements.elements
         ]
         # Stack them into a single dataframe
         df = pd.concat(dfs, ignore_index=True).sort_values(by="wavelength")

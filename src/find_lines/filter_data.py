@@ -27,6 +27,8 @@ class FilterDataDialog(ModalScreen):
         ("ctrl+y", "confirm_choices", "Confirm and Close"),
     ]
 
+    AUTO_FOCUS = "#elements"
+
     def __init__(
         self,
         initial_filters: DataFilters,
@@ -90,7 +92,9 @@ class FilterDataDialog(ModalScreen):
 
         elements: ElementFilter = self.filters.elements
         elements.elements = [
-            e.strip() for e in self.query_one("#elements", Input).value.split(",")
+            stripped
+            for e in self.query_one("#elements", Input).value.split(",")
+            if (stripped := e.strip())
         ]
         for name in ["sp_num", "obs_wl", "intens", "Ei", "Ek"]:
             filter: MinMaxNanFilter = getattr(self.filters, name)

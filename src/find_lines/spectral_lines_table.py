@@ -33,10 +33,6 @@ class SpectralLinesTable(DataTable):
     def on_mount(self):
         self.spectrum = data.NistSpectralLines()
 
-    def add_data_from_file(self, path: Path) -> None:
-        self.spectrum.read_data_file(path)
-        self.fill_table()
-
     def fill_table(self):
         self.clear(columns=True)
         self.cursor_type = "row"
@@ -63,7 +59,8 @@ class SpectralLinesTable(DataTable):
     def action_filter_data(self) -> None:
         def callback(is_confirmed: bool | None) -> None:
             if is_confirmed:
-                self.fill_table()
+                if self.filters.elements.elements:
+                    self.fill_table()
 
         self.app.push_screen(FilterDataDialog(self.filters), callback=callback)
 
