@@ -1,12 +1,24 @@
+import re
+
 from textual import on
 from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, VerticalScroll
 from textual.css.query import NoMatches
 from textual.screen import ModalScreen
-from textual.validation import Integer, Number
+from textual.validation import Integer, Number, ValidationResult, Validator
 from textual.widgets import Button, Checkbox, Footer, Input, Label
 
-from find_lines.data import DataFilters, MinMaxNanFilter
+from find_lines.data import DataFilters, ElementFilter, MinMaxNanFilter
+
+re_element = re.compile(r"^[A-Z][a-z]?(?:,\s*[A-Z][a-z]?)*$")
+
+
+class ElementsValidator(Validator):
+    def validate(self, value: str) -> ValidationResult:
+        if re_element.fullmatch(value):
+            return self.success()
+        else:
+            return self.failure("Malformed element list")
 
 
 class FilterDataDialog(ModalScreen):
@@ -28,6 +40,14 @@ class FilterDataDialog(ModalScreen):
     def compose(self) -> ComposeResult:
         yield Footer()
         with VerticalScroll():
+            with HorizontalGroup():
+                yield Label("Elements:")
+                yield Input(
+                    placeholder="H, He, Li",
+                    value=", ".join(self.filters.elements.elements),
+                    validators=[ElementsValidator()],
+                    id="elements",
+                )
             for label, name, Validator in [
                 ("Ionization Stage", "sp_num", Integer),
                 ("Observed Wavelength", "obs_wl", Number),
@@ -63,6 +83,10 @@ class FilterDataDialog(ModalScreen):
 
     @on(Button.Pressed)
     def action_confirm_choices(self) -> None:
+        elements: ElementFilter = self.filters.elements
+        elements.elements = [
+            e.strip() for e in self.query_one("#elements", Input).value.split(",")
+        ]
         for name in ["sp_num", "obs_wl", "intens", "Ei", "Ek"]:
             filter: MinMaxNanFilter = getattr(self.filters, name)
             min_value = self.query_one(f"#{name}_min", Input).value

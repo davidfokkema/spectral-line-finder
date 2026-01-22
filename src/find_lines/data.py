@@ -11,6 +11,11 @@ SpectralLines: TypeAlias = list[tuple[float, str]]
 
 
 @dataclass
+class ElementFilter:
+    elements: list[str]
+
+
+@dataclass
 class MinMaxFilter:
     col_name: str
     min: float | None = None
@@ -39,6 +44,7 @@ class IntegerMinMaxFilter:
 
 @dataclass
 class DataFilters:
+    elements: ElementFilter = field(default_factory=lambda: ElementFilter([]))
     sp_num: IntegerMinMaxFilter = field(
         default_factory=lambda: IntegerMinMaxFilter(col_name="sp_num")
     )
@@ -123,14 +129,18 @@ class NistSpectralLines:
     def _get_filtered_dataframe(self, filters: DataFilters) -> pd.DataFrame:
         df = self._df
         mask = pd.Series(True, index=df.index)
-        for field_ in fields(filters):
+        for field_ in (f for f in fields(filters)):
             filter = getattr(filters, field_.name)
-            if filter.min is not None:
-                mask &= df[filter.col_name] >= filter.min
-            if filter.max is not None:
-                mask &= df[filter.col_name] <= filter.max
-            if hasattr(filter, "show_nan") and not filter.show_nan:
-                mask &= df[filter.col_name].notna()
+            if isinstance(filter, MinMaxFilter) or isinstance(
+                filter, IntegerMinMaxFilter
+            ):
+                if filter.min is not None:
+                    mask &= df[filter.col_name] >= filter.min
+                if filter.max is not None:
+                    mask &= df[filter.col_name] <= filter.max
+            if isinstance(filter, MinMaxNanFilter):
+                if not filter.show_nan:
+                    mask &= df[filter.col_name].notna()
         return df.loc[mask]
 
     def get_spectral_lines(self, filters: DataFilters) -> SpectralLines:
