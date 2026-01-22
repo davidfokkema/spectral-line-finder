@@ -83,7 +83,7 @@ class NistSpectralLines:
 
         extract_columns = ["intens", "Ei(eV)", "Ek(eV)"]
 
-        self._df = (
+        df = (
             pd.read_csv(path, delimiter="\t", usecols=range(20), skiprows=rows_to_skip)
             .rename(columns={"obs_wl_vac(nm)": "obs_wl(nm)"})
             .rename(columns={col: col + "_" for col in extract_columns})
@@ -97,9 +97,13 @@ class NistSpectralLines:
                 }
             )
         )
+        wavelength = df["ritz_wl_vac(nm)"].fillna(df["obs_wl(nm)"])
+        rgb_colors = wavelength.apply(wavelength_to_rgb)
+        df[["r", "g", "b"]] = pd.DataFrame(rgb_colors.to_list(), index=df.index)
+        self._df = df
 
     def get_display_rows(
-        self, columns: list[str], filters: DataFilters
+        self, display_columns: list[str], filters: DataFilters
     ) -> Generator[tuple[Text | str, ...], None, None]:
         df = self._df
         mask = pd.Series(True, index=df.index)
@@ -111,16 +115,16 @@ class NistSpectralLines:
                 mask &= df[filter.col_name] <= filter.max
             if hasattr(filter, "show_nan") and not filter.show_nan:
                 mask &= df[filter.col_name].notna()
-        filtered_df = df[mask][columns]
-        for idx, row in filtered_df.iterrows():
-            r, g, b = wavelength_to_rgb(
-                row["ritz_wl_vac(nm)"]
-                if np.isnan(row["obs_wl(nm)"])
-                else row["obs_wl(nm)"]
+
+        columns_to_fetch = display_columns + ["r", "g", "b"]
+        filtered_df = df.loc[mask, columns_to_fetch]
+        for _, row in filtered_df.iterrows():
+            r, g, b = row["r"], row["g"], row["b"]
+            color_swatch = Text("█████", style=f"rgb({r},{g},{b})")
+            display_values = tuple(
+                "" if pd.isna(row[c]) else str(row[c]) for c in display_columns
             )
-            yield (Text("█████", style=f"rgb({r},{g},{b})"),) + tuple(
-                "" if pd.isna(x) else str(x) for x in row
-            )
+            yield (color_swatch,) + display_values
 
 
 # Load CIE 1931 2° Standard Observer data globally

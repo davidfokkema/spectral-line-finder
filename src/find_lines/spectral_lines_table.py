@@ -41,7 +41,7 @@ class SpectralLinesTable(DataTable):
         self.add_columns("Color", *self._selected_columns)
         self.add_rows(
             self.spectrum.get_display_rows(
-                columns=self._selected_columns, filters=self.filters
+                display_columns=self._selected_columns, filters=self.filters
             )
         )
         self.notify(f"Showing {self.row_count} spectral lines.")
