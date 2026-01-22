@@ -44,7 +44,7 @@ class IntegerMinMaxFilter:
 
 @dataclass
 class DataFilters:
-    elements: ElementFilter = field(default_factory=lambda: ElementFilter([]))
+    elements: ElementFilter = field(default_factory=lambda: ElementFilter(["Na"]))
     sp_num: IntegerMinMaxFilter = field(
         default_factory=lambda: IntegerMinMaxFilter(col_name="sp_num")
     )
@@ -82,7 +82,7 @@ class NistSpectralLines:
         "line_ref",
     ]
 
-    def read_data_file(self, path: pathlib.Path) -> None:
+    def read_data_file(self, path: pathlib.Path) -> pd.DataFrame:
         rows_to_skip = [
             idx
             for idx, row in enumerate(path.read_text().splitlines())
@@ -109,7 +109,7 @@ class NistSpectralLines:
         df["wavelength"] = wavelength
         rgb_colors = wavelength.apply(wavelength_to_rgb)
         df[["r", "g", "b"]] = pd.DataFrame(rgb_colors.to_list(), index=df.index)
-        self._df = df
+        return df
 
     def get_display_rows(
         self, display_columns: list[str], filters: DataFilters
@@ -127,13 +127,18 @@ class NistSpectralLines:
             yield (color_swatch,) + display_values
 
     def _get_filtered_dataframe(self, filters: DataFilters) -> pd.DataFrame:
-        df = self._df
+        # Read all elements
+        dfs = [
+            self.read_data_file(pathlib.Path(f"lines-{element.lower()}.tsv"))
+            for element in filters.elements.elements
+        ]
+        # Stack them into a single dataframe
+        df = pd.concat(dfs, ignore_index=True).sort_values(by="wavelength")
+
         mask = pd.Series(True, index=df.index)
         for field_ in (f for f in fields(filters)):
             filter = getattr(filters, field_.name)
-            if isinstance(filter, MinMaxFilter) or isinstance(
-                filter, IntegerMinMaxFilter
-            ):
+            if isinstance(filter, (MinMaxFilter, MinMaxNanFilter, IntegerMinMaxFilter)):
                 if filter.min is not None:
                     mask &= df[filter.col_name] >= filter.min
                 if filter.max is not None:

@@ -83,6 +83,11 @@ class FilterDataDialog(ModalScreen):
 
     @on(Button.Pressed)
     def action_confirm_choices(self) -> None:
+        for input in self.query(Input):
+            if not input.is_valid:
+                self.notify("Please fix invalid input.", severity="error")
+                return
+
         elements: ElementFilter = self.filters.elements
         elements.elements = [
             e.strip() for e in self.query_one("#elements", Input).value.split(",")
