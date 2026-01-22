@@ -6,8 +6,10 @@ readme = "README.md"
 authors = [{ name = "David Fokkema", email = "davidfokkema@icloud.com" }]
 requires-python = ">=3.12"
 dependencies = [
+    "diskcache>=5.6.3",
     "httpx>=0.28.1",
     "pandas>=2.3.0",
+    "platformdirs>=4.5.1",
     "textual>=3.5.0",
     "textual-plot>=0.10.0.post2",
     "typer>=0.16.0",

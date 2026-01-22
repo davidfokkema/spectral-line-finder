@@ -1,6 +1,5 @@
 import importlib.resources
 import io
-import pathlib
 from dataclasses import dataclass, field, fields
 from typing import Any, Generator, TypeAlias
 
@@ -8,6 +7,8 @@ import httpx
 import numpy as np
 import pandas as pd
 from rich.text import Text
+
+from find_lines.cache import cache
 
 SpectralLines: TypeAlias = list[tuple[float, str]]
 
@@ -84,6 +85,7 @@ class NistSpectralLines:
         "line_ref",
     ]
 
+    @cache.memoize()
     def load_data_from_nist(self, element: str) -> pd.DataFrame:
         url = f"https://physics.nist.gov/cgi-bin/ASD/lines1.pl?spectra={element}&output_type=0&low_w=&upp_w=&unit=1&de=0&plot_out=0&I_scale_type=1&format=3&line_out=0&remove_js=on&en_unit=1&output=0&bibrefs=1&page_size=15&show_obs_wl=1&show_calc_wl=1&unc_out=1&order_out=0&max_low_enrg=&show_av=2&max_upp_enrg=&tsb_value=0&min_str=&A_out=0&intens_out=on&max_str=&allowed_out=1&forbid_out=1&min_accur=&min_intens=&conf_out=on&term_out=on&enrg_out=on&J_out=on&submit=Retrieve+Data"
 
