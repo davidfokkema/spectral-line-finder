@@ -1,11 +1,13 @@
 import importlib.resources
 import pathlib
 from dataclasses import dataclass, field, fields
-from typing import Any, Generator
+from typing import Any, Generator, TypeAlias
 
 import numpy as np
 import pandas as pd
 from rich.text import Text
+
+SpectralLines: TypeAlias = list[tuple[float, str]]
 
 
 @dataclass
@@ -98,6 +100,7 @@ class NistSpectralLines:
             )
         )
         wavelength = df["ritz_wl_vac(nm)"].fillna(df["obs_wl(nm)"])
+        df["wavelength"] = wavelength
         rgb_colors = wavelength.apply(wavelength_to_rgb)
         df[["r", "g", "b"]] = pd.DataFrame(rgb_colors.to_list(), index=df.index)
         self._df = df
@@ -105,6 +108,19 @@ class NistSpectralLines:
     def get_display_rows(
         self, display_columns: list[str], filters: DataFilters
     ) -> Generator[tuple[Text | str, ...], None, None]:
+        df = self._get_filtered_dataframe(filters)
+
+        columns_to_fetch = display_columns + ["r", "g", "b"]
+        filtered_df = df[columns_to_fetch]
+        for _, row in filtered_df.iterrows():
+            r, g, b = row["r"], row["g"], row["b"]
+            color_swatch = Text("█████", style=f"rgb({r},{g},{b})")
+            display_values = tuple(
+                "" if pd.isna(row[c]) else str(row[c]) for c in display_columns
+            )
+            yield (color_swatch,) + display_values
+
+    def _get_filtered_dataframe(self, filters: DataFilters) -> pd.DataFrame:
         df = self._df
         mask = pd.Series(True, index=df.index)
         for field_ in fields(filters):
@@ -115,16 +131,14 @@ class NistSpectralLines:
                 mask &= df[filter.col_name] <= filter.max
             if hasattr(filter, "show_nan") and not filter.show_nan:
                 mask &= df[filter.col_name].notna()
+        return df.loc[mask]
 
-        columns_to_fetch = display_columns + ["r", "g", "b"]
-        filtered_df = df.loc[mask, columns_to_fetch]
-        for _, row in filtered_df.iterrows():
-            r, g, b = row["r"], row["g"], row["b"]
-            color_swatch = Text("█████", style=f"rgb({r},{g},{b})")
-            display_values = tuple(
-                "" if pd.isna(row[c]) else str(row[c]) for c in display_columns
-            )
-            yield (color_swatch,) + display_values
+    def get_spectral_lines(self, filters: DataFilters) -> SpectralLines:
+        df = self._get_filtered_dataframe(filters)
+        return [
+            (row["wavelength"], f"#{row['r']:02x}{row['g']:02x}{row['b']:02x}")
+            for _, row in df.iterrows()
+        ]
 
 
 # Load CIE 1931 2° Standard Observer data globally

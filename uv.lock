@@ -159,6 +159,7 @@ source = { editable = "." }
 dependencies = [
     { name = "pandas" },
     { name = "textual" },
+    { name = "textual-plot" },
     { name = "typer" },
 ]
 
@@ -174,6 +175,7 @@ dev = [
 requires-dist = [
     { name = "pandas", specifier = ">=2.3.0" },
     { name = "textual", specifier = ">=3.5.0" },
+    { name = "textual-plot", specifier = ">=0.10.0.post2" },
     { name = "typer", specifier = ">=0.16.0" },
 ]
 
@@ -987,6 +989,33 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/38/fd/fd5ad9527b536c306a5a860a33a45e13983a59804b48b91ea52b42ba030a/textual_dev-1.8.0.tar.gz", hash = "sha256:7e56867b0341405a95e938cac0647e6d2763d38d0df08710469ad6b6a8db76df", size = 25026, upload-time = "2025-10-11T09:47:01.824Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/45/c6/1dc08ceee6d0bdf219c500cb2fbd605b681b63507c4ff27a6477f12f8245/textual_dev-1.8.0-py3-none-any.whl", hash = "sha256:227b6d24a485fbbc77e302aa21f4fdf3083beb57eb45cd95bae082c81cbeddeb", size = 27541, upload-time = "2025-10-11T09:47:00.531Z" },
+]
+
+[[package]]
+name = "textual-hires-canvas"
+version = "0.14.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "textual" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/20/f0/13f2a30ab7950cc3d5d5a2c893fbe3d40b4d129fd2cd30313260181578c4/textual_hires_canvas-0.14.0.tar.gz", hash = "sha256:0fa512492ddd2cd6c2a970a6beea58f5350f4cf25f40ad14ffd9fa86c6458769", size = 1251440, upload-time = "2026-01-10T22:16:56.708Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/85/ea/e7e6d0f749395d61ca2ab8cda2f3c4e6613800b6b0d0b21f9d1d180c4d42/textual_hires_canvas-0.14.0-py3-none-any.whl", hash = "sha256:8cd67d656387220684449e837dd5809b6c00c5dfee8e4b494414b5837cb5a804", size = 19825, upload-time = "2026-01-10T22:16:54.69Z" },
+]
+
+[[package]]
+name = "textual-plot"
+version = "0.10.0.post2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "textual" },
+    { name = "textual-hires-canvas" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/57/d9/c8d785676d2246e2642fbfa9b97cda311875094d9ed71f6362bebc6a5ef8/textual_plot-0.10.0.post2.tar.gz", hash = "sha256:9f6d5d0d06e24a7036a529b2bb80808ec13373ffbc960bb7402b4a5225e4116c", size = 2450965, upload-time = "2026-01-11T20:19:59.834Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/81/e5/b17b7bce4a3bf00afbbd1ad19e973bdfc4eebe37ecee8fb264487ae4826a/textual_plot-0.10.0.post2-py3-none-any.whl", hash = "sha256:d5ec5f231c48f6452f76d97c4901bbc2892e451a8ed29b13c978a8df65d78742", size = 50353, upload-time = "2026-01-11T20:20:03.875Z" },
 ]
 
 [[package]]

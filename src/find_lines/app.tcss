@@ -45,3 +45,17 @@ FilterDataDialog {
         }
     }
 }
+
+SpectrumPlot {
+    align: center middle;
+    background: black;
+    hatch: right $secondary;
+
+    PlotWidget {
+        height: 12;
+        margin: 0 5;
+        padding-right: 1;
+        border: hkey $accent;
+        background: $surface;
+    }
+}

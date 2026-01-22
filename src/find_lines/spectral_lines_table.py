@@ -6,12 +6,14 @@ from textual.widgets import DataTable
 from find_lines import data
 from find_lines.filter_data import FilterDataDialog
 from find_lines.select_columns import SelectColumnsDialog
+from find_lines.spectrum_plot import SpectrumPlot
 
 
 class SpectralLinesTable(DataTable):
     BINDINGS = [
         ("c", "select_columns", "Select Columns"),
         ("f", "filter_data", "Filter data"),
+        ("v", "visualize_spectrum", "Visualize"),
     ]
 
     _selected_columns = [
@@ -64,3 +66,7 @@ class SpectralLinesTable(DataTable):
                 self.fill_table()
 
         self.app.push_screen(FilterDataDialog(self.filters), callback=callback)
+
+    def action_visualize_spectrum(self) -> None:
+        spectral_lines = self.spectrum.get_spectral_lines(filters=self.filters)
+        self.app.push_screen(SpectrumPlot(spectral_lines))
