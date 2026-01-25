@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from rich.text import Text
 
-from find_lines.cache import cache
+from line_finder.cache import cache
 
 SpectralLines: TypeAlias = list[tuple[float, str]]
 
@@ -170,7 +170,7 @@ class NistSpectralLines:
 
 
 # Load CIE 1931 2° Standard Observer data globally
-with importlib.resources.path("find_lines", "CIE_xyz_1931_2deg.csv") as data_path:
+with importlib.resources.path("line_finder", "CIE_xyz_1931_2deg.csv") as data_path:
     cie_data = pd.read_csv(data_path, header=None, names=["wavelength", "X", "Y", "Z"])
 
 

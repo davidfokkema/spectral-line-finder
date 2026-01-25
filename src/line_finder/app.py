@@ -1,9 +1,8 @@
-
 import typer
 from textual.app import App, ComposeResult
 from textual.widgets import Footer, Header
 
-from find_lines.spectral_lines_table import SpectralLinesTable
+from line_finder.spectral_lines_table import SpectralLinesTable
 
 app = typer.Typer()
 

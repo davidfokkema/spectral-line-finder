@@ -1,7 +1,7 @@
 [project]
-name = "find-lines"
+name = "line-finder"
 version = "0.1.0"
-description = "Add your description here"
+description = "Find and match lines in spectroscopic data from NIST."
 readme = "README.md"
 authors = [{ name = "David Fokkema", email = "davidfokkema@icloud.com" }]
 requires-python = ">=3.12"
@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.scripts]
-find-lines = "find_lines.app:app"
+line-finder = "line_finder.app:app"
 
 [build-system]
 requires = ["hatchling"]

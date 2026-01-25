@@ -4,7 +4,7 @@ from textual.screen import ModalScreen
 from textual.widgets import Footer
 from textual_plot import PlotWidget
 
-from find_lines.data import SpectralLines
+from line_finder.data import SpectralLines
 
 
 class SpectrumPlot(ModalScreen):
