@@ -8,7 +8,11 @@ from textual.screen import ModalScreen
 from textual.validation import Integer, Number, ValidationResult, Validator
 from textual.widgets import Button, Checkbox, Footer, Input, Label
 
-from line_finder.data import DataFilters, ElementFilter, MinMaxNanFilter
+from spectral_line_finder.data import (
+    DataFilters,
+    ElementFilter,
+    MinMaxNanFilter,
+)
 
 re_element = re.compile(r"^[A-Z][a-z]?(?:,\s*[A-Z][a-z]?)*$")
 

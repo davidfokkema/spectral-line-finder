@@ -1,10 +1,10 @@
 from textual import work
 from textual.widgets import DataTable
 
-from line_finder import data
-from line_finder.filter_data import FilterDataDialog
-from line_finder.select_columns import SelectColumnsDialog
-from line_finder.spectrum_plot import SpectrumPlot
+from spectral_line_finder import data
+from spectral_line_finder.filter_data import FilterDataDialog
+from spectral_line_finder.select_columns import SelectColumnsDialog
+from spectral_line_finder.spectrum_plot import SpectrumPlot
 
 
 class SpectralLinesTable(DataTable):

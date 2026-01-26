@@ -1,5 +1,5 @@
 [project]
-name = "line-finder"
+name = "spectral-line-finder"
 version = "0.1.0"
 description = "Find and match lines in spectroscopic data from NIST."
 readme = "README.md"
@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.scripts]
-line-finder = "line_finder.app:app"
+spectral-line-finder = "spectral_line_finder.app:app"
 
 [build-system]
 requires = ["hatchling"]

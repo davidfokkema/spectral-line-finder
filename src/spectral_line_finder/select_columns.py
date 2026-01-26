@@ -3,7 +3,7 @@ from textual.containers import Vertical
 from textual.screen import ModalScreen
 from textual.widgets import Button, Footer, SelectionList
 
-from line_finder.data import NistSpectralLines
+from spectral_line_finder.data import NistSpectralLines
 
 
 class SelectColumnsDialog(ModalScreen):
