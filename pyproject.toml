@@ -13,6 +13,7 @@ dependencies = [
     "textual>=3.5.0",
     "textual-plot>=0.10.0.post2",
     "typer>=0.16.0",
+    "beautifulsoup4>=4.14.3",
 ]
 
 [project.scripts]

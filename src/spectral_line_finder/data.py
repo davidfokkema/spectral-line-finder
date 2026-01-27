@@ -7,6 +7,7 @@ import httpx
 import numpy as np
 import pandas as pd
 from rich.text import Text
+from bs4 import BeautifulSoup
 
 from spectral_line_finder.cache import cache
 
@@ -144,10 +145,22 @@ class NistSpectralLines:
 
         Returns:
             A pandas DataFrame with processed spectral data.
+
+        Raises:
+            ValueError: If the NIST website returns an error page.
         """
         url = f"https://physics.nist.gov/cgi-bin/ASD/lines1.pl?spectra={element}&output_type=0&low_w=&upp_w=&unit=1&de=0&plot_out=0&I_scale_type=1&format=3&line_out=0&remove_js=on&en_unit=1&output=0&bibrefs=1&page_size=15&show_obs_wl=1&show_calc_wl=1&unc_out=1&order_out=0&max_low_enrg=&show_av=2&max_upp_enrg=&tsb_value=0&min_str=&A_out=0&intens_out=on&max_str=&allowed_out=1&forbid_out=1&min_accur=&min_intens=&conf_out=on&term_out=on&enrg_out=on&J_out=on&submit=Retrieve+Data"
 
-        data = httpx.get(url).text
+        response = httpx.get(url)
+        response.raise_for_status()
+
+        data = response.text
+        if "html" in response.headers.get("Content-Type", ""):
+            soup = BeautifulSoup(data, "html.parser")
+            for script in soup(["script", "style"]):
+                script.decompose()
+            text = soup.get_text(separator="\n", strip=True)
+            raise ValueError(text)
 
         if element == "H":
             df = self._load_nist_data_for_h(data)
