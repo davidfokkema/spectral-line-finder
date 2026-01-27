@@ -188,6 +188,8 @@ class NistSpectralLines:
         self, display_columns: list[str], filters: DataFilters
     ) -> Generator[tuple[Text | str, ...], None, None]:
         df = self._get_filtered_dataframe(filters)
+        if df is None:
+            return
 
         columns_to_fetch = display_columns + ["r", "g", "b"]
         filtered_df = df[columns_to_fetch]
@@ -199,11 +201,14 @@ class NistSpectralLines:
             )
             yield (color_swatch,) + display_values
 
-    def _get_filtered_dataframe(self, filters: DataFilters) -> pd.DataFrame:
+    def _get_filtered_dataframe(self, filters: DataFilters) -> pd.DataFrame | None:
         # Read all elements
         dfs = [
             self.load_data_from_nist(element) for element in filters.elements.elements
         ]
+        if not dfs:
+            return None
+
         # Stack them into a single dataframe
         df = pd.concat(dfs, ignore_index=True).sort_values(by="wavelength")
 
@@ -222,10 +227,13 @@ class NistSpectralLines:
 
     def get_spectral_lines(self, filters: DataFilters) -> SpectralLines:
         df = self._get_filtered_dataframe(filters)
-        return [
-            (row["wavelength"], f"#{row['r']:02x}{row['g']:02x}{row['b']:02x}")
-            for _, row in df.iterrows()
-        ]
+        if df is not None:
+            return [
+                (row["wavelength"], f"#{row['r']:02x}{row['g']:02x}{row['b']:02x}")
+                for _, row in df.iterrows()
+            ]
+        else:
+            return []
 
 
 # Load CIE 1931 2° Standard Observer data globally

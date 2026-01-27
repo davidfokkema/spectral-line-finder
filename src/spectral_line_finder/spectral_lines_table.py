@@ -50,9 +50,8 @@ class SpectralLinesTable(DataTable):
         selection = await self.app.push_screen_wait(
             SelectColumnsDialog(self._selected_columns)
         )
-        if selection is not None:
-            self._selected_columns = selection
-            self.fill_table()
+        self._selected_columns = selection
+        self.fill_table()
 
     def action_filter_data(self) -> None:
         def callback(is_confirmed: bool | None) -> None:
