@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix handling of hydrogen data.
 - Fix crashes when the data table is empty.
+- Fix crash when column dialog was dismissed.
 
 ## [0.1.0] - 2026-01-26
 
