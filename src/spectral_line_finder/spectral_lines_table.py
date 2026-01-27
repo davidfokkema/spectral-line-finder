@@ -35,12 +35,15 @@ class SpectralLinesTable(DataTable):
         self.clear(columns=True)
         self.cursor_type = "row"
         self.add_columns("Color", *self._selected_columns)
-        self.add_rows(
-            self.spectrum.get_display_rows(
-                display_columns=self._selected_columns, filters=self.filters
+        try:
+            self.add_rows(
+                self.spectrum.get_display_rows(
+                    display_columns=self._selected_columns, filters=self.filters
+                )
             )
-        )
-        self.notify(f"Showing {self.row_count} spectral lines.")
+            self.notify(f"Showing {self.row_count} spectral lines.")
+        except data.NistDataError as e:
+            self.notify(str(e), severity="error")
 
     def action_select_columns(self) -> None:
         self.select_columns()
@@ -63,5 +66,8 @@ class SpectralLinesTable(DataTable):
         self.app.push_screen(FilterDataDialog(self.filters), callback=callback)
 
     def action_visualize_spectrum(self) -> None:
-        spectral_lines = self.spectrum.get_spectral_lines(filters=self.filters)
-        self.app.push_screen(SpectrumPlot(spectral_lines))
+        try:
+            spectral_lines = self.spectrum.get_spectral_lines(filters=self.filters)
+            self.app.push_screen(SpectrumPlot(spectral_lines))
+        except data.NistDataError as e:
+            self.notify(str(e), severity="error")

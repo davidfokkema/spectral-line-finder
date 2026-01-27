@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Display NIST error messages when fetching data gives an error.
+
 ### Fixed
 
 - Fix handling of hydrogen data.
