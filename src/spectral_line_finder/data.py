@@ -85,12 +85,42 @@ class NistSpectralLines:
         "line_ref",
     ]
 
-    @cache.memoize()
-    def load_data_from_nist(self, element: str) -> pd.DataFrame:
-        url = f"https://physics.nist.gov/cgi-bin/ASD/lines1.pl?spectra={element}&output_type=0&low_w=&upp_w=&unit=1&de=0&plot_out=0&I_scale_type=1&format=3&line_out=0&remove_js=on&en_unit=1&output=0&bibrefs=1&page_size=15&show_obs_wl=1&show_calc_wl=1&unc_out=1&order_out=0&max_low_enrg=&show_av=2&max_upp_enrg=&tsb_value=0&min_str=&A_out=0&intens_out=on&max_str=&allowed_out=1&forbid_out=1&min_accur=&min_intens=&conf_out=on&term_out=on&enrg_out=on&J_out=on&submit=Retrieve+Data"
+    def _load_nist_data_for_h(self, data: str) -> pd.DataFrame:
+        """Loads NIST data for Hydrogen, handling its special format.
 
-        data = httpx.get(url).text
+        Args:
+            data: Raw data from the NIST service.
 
+        Returns:
+            A pandas DataFrame with parsed spectral data for Hydrogen.
+        """
+        # Find and skip header rows, which start with "obs_wl" for H
+        rows_to_skip = [
+            idx for idx, row in enumerate(data.splitlines()) if row.startswith("obs_wl")
+        ]
+
+        df = pd.read_csv(
+            io.StringIO(data),
+            delimiter="\t",
+            header=None,
+            names=self.all_columns[2:],
+            usecols=range(18),
+            skiprows=rows_to_skip,
+        )
+        df["element"] = "H"
+        df["sp_num"] = "1"
+        # Reorder columns to be consistent with data from other elements.
+        return df[self.all_columns]
+
+    def _load_nist_data_generic(self, data: str) -> pd.DataFrame:
+        """Loads NIST data for any element except Hydrogen.
+
+        Args:
+            data: Raw data from the NIST service.
+
+        Returns:
+            A pandas DataFrame with parsed spectral data.
+        """
         # Find header rows, interspersed in the data
         rows_to_skip = [
             idx
@@ -98,16 +128,40 @@ class NistSpectralLines:
             if row.startswith("element")
         ][1:]
 
-        extract_columns = ["intens", "Ei(eV)", "Ek(eV)", "ritz_wl_vac(nm)"]
+        return pd.read_csv(
+            io.StringIO(data),
+            delimiter="\t",
+            usecols=range(20),
+            skiprows=rows_to_skip,
+        )
 
+    @cache.memoize()
+    def load_data_from_nist(self, element: str) -> pd.DataFrame:
+        """Fetches and parses spectral line data from NIST for a given element.
+
+        Args:
+            element: The symbol of the element to fetch data for (e.g., "H", "He").
+
+        Returns:
+            A pandas DataFrame with processed spectral data.
+        """
+        url = f"https://physics.nist.gov/cgi-bin/ASD/lines1.pl?spectra={element}&output_type=0&low_w=&upp_w=&unit=1&de=0&plot_out=0&I_scale_type=1&format=3&line_out=0&remove_js=on&en_unit=1&output=0&bibrefs=1&page_size=15&show_obs_wl=1&show_calc_wl=1&unc_out=1&order_out=0&max_low_enrg=&show_av=2&max_upp_enrg=&tsb_value=0&min_str=&A_out=0&intens_out=on&max_str=&allowed_out=1&forbid_out=1&min_accur=&min_intens=&conf_out=on&term_out=on&enrg_out=on&J_out=on&submit=Retrieve+Data"
+
+        data = httpx.get(url).text
+
+        if element == "H":
+            df = self._load_nist_data_for_h(data)
+        else:
+            df = self._load_nist_data_generic(data)
+
+        # The following steps sanitize columns that are supposed to be numeric
+        # but may contain extra non-numeric characters. For each of these
+        # columns, we extract the leading floating-point number and convert the
+        # column to a numeric type. We keep the original columns in the
+        # dataframe by appending an underscore to the name.
+        extract_columns = ["intens", "Ei(eV)", "Ek(eV)", "ritz_wl_vac(nm)"]
         df = (
-            pd.read_csv(
-                io.StringIO(data),
-                delimiter="\t",
-                usecols=range(20),
-                skiprows=rows_to_skip,
-            )
-            .rename(columns={"obs_wl_vac(nm)": "obs_wl(nm)"})
+            df.rename(columns={"obs_wl_vac(nm)": "obs_wl(nm)"})
             .rename(columns={col: col + "_" for col in extract_columns})
             .assign(
                 **{
@@ -119,10 +173,15 @@ class NistSpectralLines:
                 }
             )
         )
+
+        # Create a wavelength column preferring the ritz wavelength but using
+        # the observed wavelength if missing.
         wavelength = df["ritz_wl_vac(nm)"].fillna(df["obs_wl(nm)"])
         df["wavelength"] = wavelength
+        # Create rgb color values and add them to the dataframe
         rgb_colors = wavelength.apply(wavelength_to_rgb)
         df[["r", "g", "b"]] = pd.DataFrame(rgb_colors.to_list(), index=df.index)
+
         return df
 
     def get_display_rows(
