@@ -45,7 +45,8 @@ class FilterDataDialog(ModalScreen):
 
     def compose(self) -> ComposeResult:
         yield Footer()
-        with VerticalScroll():
+        with VerticalScroll() as container:
+            container.border_title = "Atomic spectra parameters"
             with HorizontalGroup():
                 yield Label("Elements:")
                 yield Input(

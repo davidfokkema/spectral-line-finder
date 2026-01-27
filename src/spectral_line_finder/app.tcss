@@ -6,8 +6,9 @@ SelectColumnsDialog {
     align: center middle;
 
     & > Vertical {
-        border: solid $primary;
-        width: 90%;
+        border: panel $primary;
+        padding: 1 1 0 1;
+        width: 50;
         height: 90%;
 
         & SelectionList {
@@ -25,7 +26,8 @@ FilterDataDialog {
     align: center middle;
 
     & > VerticalScroll {
-        border: solid $primary;
+        border: panel $primary;
+        padding: 1 1 0 1;
         width: auto;
         height: auto;
         max-height: 90%;

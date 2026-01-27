@@ -21,7 +21,8 @@ class SelectColumnsDialog(ModalScreen):
 
     def compose(self) -> ComposeResult:
         yield Footer()
-        with Vertical():
+        with Vertical() as container:
+            container.border_title = "Select visible columns"
             yield SelectionList[str](
                 *(
                     (col, col, col in self.initial_selected)
