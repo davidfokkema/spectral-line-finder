@@ -1,3 +1,7 @@
+SpectralLinesTable {
+    height: 1fr;
+}
+
 SelectColumnsDialog {
     align: center middle;
 

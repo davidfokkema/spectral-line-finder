@@ -6,8 +6,8 @@ from typing import Any, Generator, TypeAlias
 import httpx
 import numpy as np
 import pandas as pd
-from rich.text import Text
 from bs4 import BeautifulSoup
+from rich.text import Text
 
 from spectral_line_finder.cache import cache
 

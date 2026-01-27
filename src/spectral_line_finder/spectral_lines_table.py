@@ -1,3 +1,4 @@
+from rich.text import Text
 from textual import work
 from textual.widgets import DataTable
 
@@ -31,19 +32,30 @@ class SpectralLinesTable(DataTable):
     def on_mount(self):
         self.spectrum = data.NistSpectralLines()
 
-    def fill_table(self):
+    @work
+    async def fill_table(self):
+        self.loading = True
         self.clear(columns=True)
         self.cursor_type = "row"
         self.add_columns("Color", *self._selected_columns)
+
+        worker = self.get_display_rows(
+            display_columns=self._selected_columns, filters=self.filters
+        )
+        await worker.wait()
+        self.add_rows(worker.result)
+        self.notify(f"Showing {self.row_count} spectral lines.")
+        self.loading = False
+
+    @work(thread=True)
+    def get_display_rows(
+        self, display_columns, filters
+    ) -> list[tuple[Text | str, ...]]:
         try:
-            self.add_rows(
-                self.spectrum.get_display_rows(
-                    display_columns=self._selected_columns, filters=self.filters
-                )
-            )
-            self.notify(f"Showing {self.row_count} spectral lines.")
+            return list(self.spectrum.get_display_rows(display_columns, filters))
         except data.NistDataError as e:
             self.notify(str(e), severity="error")
+            return []
 
     def action_select_columns(self) -> None:
         self.select_columns()
