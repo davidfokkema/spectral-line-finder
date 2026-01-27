@@ -254,6 +254,12 @@ class NistSpectralLines:
         else:
             return []
 
+    def get_wavelengths(self, filters: DataFilters) -> pd.Series | None:
+        if (df := self._get_filtered_dataframe(filters)) is not None:
+            return df["wavelength"]
+        else:
+            return None
+
 
 # Load CIE 1931 2° Standard Observer data globally
 with importlib.resources.path(

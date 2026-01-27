@@ -6,6 +6,7 @@ from spectral_line_finder import data
 from spectral_line_finder.filter_data import FilterDataDialog
 from spectral_line_finder.select_columns import SelectColumnsDialog
 from spectral_line_finder.spectrum_plot import SpectrumPlot
+from spectral_line_finder.wavelength_dialog import WavelengthDialog
 
 
 class SpectralLinesTable(DataTable):
@@ -13,6 +14,7 @@ class SpectralLinesTable(DataTable):
         ("c", "select_columns", "Select Columns"),
         ("f", "filter_data", "Filter data"),
         ("v", "visualize_spectrum", "Visualize"),
+        ("j", "jump", "Jump"),
     ]
 
     _selected_columns = [
@@ -83,3 +85,14 @@ class SpectralLinesTable(DataTable):
             self.app.push_screen(SpectrumPlot(spectral_lines))
         except data.NistDataError as e:
             self.notify(str(e), severity="error")
+
+    def action_jump(self) -> None:
+        def callback(value: int | None) -> None:
+            if value is not None:
+                if (
+                    wavelengths := self.spectrum.get_wavelengths(self.filters)
+                ) is not None:
+                    index = int(wavelengths.searchsorted(value))
+                    self.move_cursor(row=index)
+
+        self.app.push_screen(WavelengthDialog(), callback=callback)
