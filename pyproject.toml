@@ -1,6 +1,6 @@
 [project]
 name = "spectral-line-finder"
-version = "0.1.0"
+version = "0.2.0"
 description = "Find and match lines in spectroscopic data from NIST."
 readme = "README.md"
 authors = [{ name = "David Fokkema", email = "davidfokkema@icloud.com" }]
