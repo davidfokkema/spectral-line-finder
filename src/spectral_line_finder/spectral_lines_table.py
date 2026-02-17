@@ -48,6 +48,7 @@ class SpectralLinesTable(DataTable):
         self.add_rows(worker.result)
         self.notify(f"Showing {self.row_count} spectral lines.")
         self.loading = False
+        self.refresh_bindings()
 
     @work(thread=True)
     def get_display_rows(
